@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plano con Cotas</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .controls {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .btn-generar {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-generar:hover {
+            background-color: #1d4ed8;
+        }
+        
+        /* Contenedor A4 responsive */
+        .a4-container {
+            position: relative;
+            width: 90vw;
+            max-width: 600px;
+            aspect-ratio: 1 / 1.414; /* Proporción A4 */
+            background-color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        
+        /* Cabecera con 3 líneas de texto */
+        .cabecera {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1.5% 3%;
+            background-color: white;
+            border-bottom: 1px solid #ddd;
+            z-index: 10;
+        }
+        
+        .linea-cabecera {
+            font-size: clamp(10px, 1.8vw, 14px);
+            color: #1f2937;
+            margin-bottom: 0.3%;
+        }
+        
+        .linea-cabecera strong {
+            color: #374151;
+        }
+        
+        /* Imagen de fondo */
+        .plano-fondo {
+            position: absolute;
+            top: 12%;
+            left: 5%;
+            width: 90%;
+            height: 83%;
+            object-fit: contain;
+        }
+        
+        /* Capa de cotas */
+        .capa-cotas {
+            position: absolute;
+            top: 12%;
+            left: 0;
+            width: 100%;
+            height: 83%;
+        }
+        
+        /* Textos verticales */
+        .texto-vertical {
+            position: absolute;
+            font-size: clamp(11px, 1.6vw, 15px);
+            font-weight: 420;
+            transform: rotate(270deg);
+            transform-origin: left bottom;
+            white-space: nowrap;
+        }
+        
+        #textoVertical1 {
+            bottom: 62%;
+            left: 19%;
+            color: #dc2626;
+        }
+        
+        #textoVertical2 {
+            bottom: 25%;
+            left: 31%;
+            color: #dc2626;
+        }
+        
+        #textoVertical3 {
+            bottom: 70%;
+            left: 85%;
+            color: #000;
+        }
+        
+        /* Estilo de cada cota */
+        .cota {
+            position: absolute;
+            font-size: clamp(5px, 1vw, 15px);
+            font-weight: 480;
+            color: #dc2626;
+            text-align: center;
+            white-space: nowrap;
+        }
+        
+        /* Mensaje "Cotas en mm" */
+        .mensaje-unidades {
+            position: absolute;
+            bottom: 2%;
+            right: 3%;
+            font-size: clamp(10px, 1.5vw, 14px);
+            color: #374151;
+            font-style: italic;
+        }
+        
+        /* Posiciones base de las cotas (DERECHA 4 BISAGRAS) */
+        #cota1 { top: 46%; left: 18%; }
+        #cota2 { top: 42.8%; left: 30%; }
+        #cota3 { top: 66%; left: 39%; }
+        #cota4 { top: 88%; left: 62%; transform: translateX(-50%); color: #000; }
+        #cota5 { top: 23.5%; right: 29.5%; color: #000; }
+        #cota6 { top: 45%; right: 29.5%; color: #000; }
+        #cota7 { top: 67%; right: 29.5%; color: #000; }
+        #cota8 { top: 45%; right: 12%; color: #000; }
+
+        /* Responsive para impresión/PDF */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .controls {
+                display: none;
+            }
+            
+            .a4-container {
+                width: 210mm;
+                height: 297mm;
+                max-width: none;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button class="btn-generar" onclick="generarPDF()">📄 Generar PDF</button>
+    </div>
+    
+    <div class="a4-container" id="contenidoPDF">
+        <!-- Cabecera con 3 líneas -->
+        <div class="cabecera">
+            <div class="linea-cabecera"><strong>Cliente:</strong> <span id="lineaCabecera1">Nombre del cliente</span></div>
+            <div class="linea-cabecera"><strong>Proyecto:</strong> <span id="lineaCabecera2">Descripción del proyecto</span></div>
+            <div class="linea-cabecera"><strong>Fecha:</strong> <span id="lineaCabecera3">30/11/2025</span></div>
+        </div>
+        
+        <img src="" 
+             alt="Plano técnico" 
+             class="plano-fondo"
+             id="imagenPlano">
+        
+        <div class="capa-cotas">
+            <!-- Textos verticales -->
+            <div class="texto-vertical" id="textoVertical1">Primer Corte</div>
+            <div class="texto-vertical" id="textoVertical2">Segundo Corte</div>
+            <div class="texto-vertical" id="textoVertical3">Lado Bisagras</div>
+            
+            <!-- Cotas -->
+            <div class="cota" id="cota1">prim</div>
+            <div class="cota" id="cota2">seg</div>
+            <div class="cota" id="cota3">1005</div>
+            <div class="cota" id="cota4">1025</div>
+            <div class="cota" id="cota5">850</div>
+            <div class="cota" id="cota6">900</div>
+            <div class="cota" id="cota7">900</div>
+            <div class="cota" id="cota8">100</div>
+
+            <div class="mensaje-unidades">Cotas en mm</div>
+        </div>
+    </div>
+    
+    <script>
+        // ========================================
+        // CONFIGURACIÓN - Desde tus formularios
+        // ========================================
+        
+        // Simulación de datos (reemplaza con tus datos reales)
+        const config = {
+            Mano: 'Derecha',  // 'Derecha' o 'Izquierda'
+            NumBis: '4',      // '3' o '4'
+            // Valores de las cotas desde formularios
+            cotas: {
+                cota1: 'prim',
+                cota2: 'seg',
+                cota3: 1005,
+                cota4: 1025,
+                cota5: 850,
+                cota6: 900,
+                cota7: 900,
+                cota8: 100
+            },
+            cabecera: {
+                cliente: 'Nombre del cliente',
+                proyecto: 'Descripción del proyecto',
+                fecha: '30/11/2025'
+            }
+        };
+
+        // ========================================
+        // FUNCIÓN PRINCIPAL - Configurar informe
+        // ========================================
+        
+        function configurarInforme() {
+            const { Mano, NumBis, cotas, cabecera } = config;
+            
+            // 1. Seleccionar imagen correcta
+            let nombreImagen = '';
+            if (Mano === 'Derecha' && NumBis === '4') {
+                nombreImagen = 'Puerta4D.png';
+            } else if (Mano === 'Derecha' && NumBis === '3') {
+                nombreImagen = 'Puerta3D.png';
+            } else if (Mano === 'Izquierda' && NumBis === '4') {
+                nombreImagen = 'Puerta4I.png';
+            } else if (Mano === 'Izquierda' && NumBis === '3') {
+                nombreImagen = 'Puerta3I.png';
+            }
+            
+            const urlImagen = `https://raw.githubusercontent.com/Jdurba/Rasomuro02/main/${nombreImagen}`;
+            console.log('Cargando imagen:', urlImagen);
+            document.getElementById('imagenPlano').src = urlImagen;
+            
+            // 2. Cargar valores de cotas
+            Object.keys(cotas).forEach(key => {
+                const elemento = document.getElementById(key);
+                if (elemento) {
+                    elemento.textContent = cotas[key];
+                }
+            });
+            
+            // 3. APLICAR POSICIONES según Mano y NumBis
+            if (Mano === 'Derecha' && NumBis === '4') {
+                aplicarPosicionesDerecha4();
+            } else if (Mano === 'Derecha' && NumBis === '3') {
+                aplicarPosicionesDerecha3();
+            } else if (Mano === 'Izquierda' && NumBis === '4') {
+                aplicarPosicionesIzquierda4();
+            } else if (Mano === 'Izquierda' && NumBis === '3') {
+                aplicarPosicionesIzquierda3();
+            }
+            
+            // 4. Cargar datos de cabecera
+            document.getElementById('lineaCabecera1').textContent = cabecera.cliente;
+            document.getElementById('lineaCabecera2').textContent = cabecera.proyecto;
+            document.getElementById('lineaCabecera3').textContent = cabecera.fecha;
+        }
+        
+        // ========================================
+        // FUNCIONES DE POSICIONAMIENTO
+        // ========================================
+        
+        function aplicarPosicionesDerecha4() {
+            // Posiciones BASE (las que ya tienes en CSS)
+            // Cotas verticales izquierda
+            setPosicion('cota1', { top: '46%', left: '18%', right: '' });
+            setPosicion('cota2', { top: '42.8%', left: '30%', right: '' });
+            setPosicion('cota3', { top: '66%', left: '39%', right: '' });
+            setPosicion('cota4', { top: '88%', left: '62%', right: '' });
+            
+            // Cotas verticales derecha
+            setPosicion('cota5', { top: '23.5%', left: '', right: '29.5%' });
+            setPosicion('cota6', { top: '45%', left: '', right: '29.5%' });
+            setPosicion('cota7', { top: '67%', left: '', right: '29.5%', display: 'block' });
+            setPosicion('cota8', { top: '45%', left: '', right: '12%' });
+            
+            // Textos verticales
+            setPosicion('textoVertical1', { bottom: '62%', left: '19%', right: '' });
+            setPosicion('textoVertical2', { bottom: '25%', left: '31%', right: '' });
+            setPosicion('textoVertical3', { bottom: '70%', left: '85%', right: '' });
+        }
+        
+        function aplicarPosicionesDerecha3() {
+            // Igual que Derecha4 pero con cotas 5,6,7 ajustadas
+            aplicarPosicionesDerecha4(); // Primero aplica las base
+            
+            // Luego ajusta las específicas de 3 bisagras
+            setPosicion('cota5', { top: '30%', left: '', right: '29.5%' });
+            setPosicion('cota6', { top: '61.7%', left: '', right: '29.5%' });
+            setPosicion('cota7', { display: 'none' }); // Oculta cota7
+        }
+        
+        function aplicarPosicionesIzquierda4() {
+            // AJUSTA ESTOS VALORES para versión IZQUIERDA 4 BISAGRAS
+            // Cotas verticales (las que estaban a la izquierda van a la derecha)
+            setPosicion('cota1', { top: '46%', left: '', right: '18%' });  // AJUSTA
+            setPosicion('cota2', { top: '42.8%', left: '', right: '30%' }); // AJUSTA
+            setPosicion('cota3', { top: '66%', left: '', right: '39%' });   // AJUSTA
+            setPosicion('cota4', { top: '88%', left: '38%', right: '' });   // AJUSTA (centrada)
+            
+            // Cotas verticales (las que estaban a la derecha van a la izquierda)
+            setPosicion('cota5', { top: '23.5%', left: '29.5%', right: '' });  // AJUSTA
+            setPosicion('cota6', { top: '45%', left: '29.5%', right: '' });    // AJUSTA
+            setPosicion('cota7', { top: '67%', left: '29.5%', right: '', display: 'block' }); // AJUSTA
+            setPosicion('cota8', { top: '45%', left: '12%', right: '' });      // AJUSTA
+            
+            // Textos verticales
+            setPosicion('textoVertical1', { bottom: '62%', left: '', right: '19%' }); // AJUSTA
+            setPosicion('textoVertical2', { bottom: '25%', left: '', right: '31%' }); // AJUSTA
+            setPosicion('textoVertical3', { bottom: '70%', left: '', right: '85%' }); // AJUSTA
+        }
+        
+        function aplicarPosicionesIzquierda3() {
+            // AJUSTA ESTOS VALORES para versión IZQUIERDA 3 BISAGRAS
+            aplicarPosicionesIzquierda4(); // Primero las base
+            
+            // Luego ajusta las específicas de 3 bisagras
+            setPosicion('cota5', { top: '30%', left: '29.5%', right: '' });   // AJUSTA
+            setPosicion('cota6', { top: '61.7%', left: '29.5%', right: '' }); // AJUSTA
+            setPosicion('cota7', { display: 'none' }); // Oculta cota7
+        }
+        
+        // Función auxiliar para establecer posiciones
+        function setPosicion(id, estilos) {
+            const elemento = document.getElementById(id);
+            if (!elemento) return;
+            
+            if (estilos.top !== undefined) elemento.style.top = estilos.top;
+            if (estilos.bottom !== undefined) elemento.style.bottom = estilos.bottom;
+            if (estilos.left !== undefined) elemento.style.left = estilos.left;
+            if (estilos.right !== undefined) elemento.style.right = estilos.right;
+            if (estilos.display !== undefined) elemento.style.display = estilos.display;
+        }
+        
+        // ========================================
+        // FUNCIÓN PDF
+        // ========================================
+        
+        function generarPDF() {
+            const elemento = document.getElementById('contenidoPDF');
+            
+            const opciones = {
+                margin: 0,
+                filename: `plano-${config.Mano}-${config.NumBis}bis.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2,
+                    useCORS: true,
+                    logging: false
+                },
+                jsPDF: { 
+                    unit: 'mm', 
+                    format: 'a4', 
+                    orientation: 'portrait' 
+                }
+            };
+            
+            html2pdf().set(opciones).from(elemento).save();
+        }
+        
+        // ========================================
+        // CARGA DE DATOS DESDE FORMULARIOS
+        // ========================================
+        
+        function cargarDatosDeFormularios() {
+            // OPCIÓN 1: Desde localStorage
+            // const datos = JSON.parse(localStorage.getItem('datosInforme'));
+            // if (datos) {
+            //     config.Mano = datos.Mano;
+            //     config.NumBis = datos.NumBis;
+            //     config.cotas = datos.cotas;
+            //     config.cabecera = datos.cabecera;
+            // }
+            
+            // OPCIÓN 2: Desde parámetros URL
+            // const params = new URLSearchParams(window.location.search);
+            // config.Mano = params.get('mano') || 'Derecha';
+            // config.NumBis = params.get('bis') || '4';
+        }
+        
+        // ========================================
+        // INICIALIZACIÓN
+        // ========================================
+        
+        // Esperar a que el DOM esté completamente cargado
+        window.addEventListener('DOMContentLoaded', function() {
+            cargarDatosDeFormularios();
+            configurarInforme();
+        });
+    </script>
+</body>
+</html>
