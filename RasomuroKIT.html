@@ -359,9 +359,7 @@
       gap: 0.5rem;
     }
     .rk-apertura-dibujo {
-      flex: 1;
       min-height: 140px;
-      max-height: 70%;
       background: var(--card-bg-idle);
       border: 1px solid var(--card-bd-idle);
       border-radius: 5px;
@@ -377,7 +375,7 @@
       object-fit: contain;
       display: block;
     }
-    .rk-apertura-dibujo .rk-flip {
+    .rk-flip {
       transform: scaleX(-1);
     }
 
@@ -431,10 +429,48 @@
       width: auto;
     }
 
+    /* Frame que contiene el wrapper de cotas: actúa como flex centrado */
+    .rk-resumen .rk-img-card .rk-img-frame:has(.rk-cota-wrap) {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+    }
+
+    /* Contenedor de cotas: ocupa el alto del frame, ancho automático según la
+       proporción de la imagen. container-type habilita unidades cqw para que
+       las cotas escalen proporcionalmente al ancho real del dibujo. */
+    .rk-cota-wrap {
+      position: relative;
+      height: 100%;
+      max-width: 100%;
+      aspect-ratio: var(--combo-ratio, 1);
+      container-type: inline-size;
+    }
+    .rk-cota-wrap img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    /* La imagen es la que rota; las cotas quedan fuera del scaleX */
+    .rk-cota-wrap.rk-flip { transform: none; }
+    .rk-cota-wrap.rk-flip img { transform: scaleX(-1); }
+
+    .rk-cota {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      font-size: 4cqw;
+      font-weight: 400;
+      color: var(--ink);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
     .rk-resumen-bloque {
       display: flex;
       flex-direction: column;
-      gap: 1.2rem;
+      gap: 2.4rem;
     }
 
     .rk-resumen-titulo {
@@ -448,19 +484,64 @@
     }
 
     /* Tabla de datos (selecciones) */
+    /* Bloque "Parámetros seleccionados": dos sub-columnas con separador sutil */
     .rk-datos {
       display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 0.35rem 1.2rem;
+      grid-template-columns: minmax(0, 1.15fr) 1px minmax(0, 1fr);
+      gap: 0 1.6rem;
       font-size: 0.92rem;
+      margin-top: 1rem;          /* aire bajo la cabecera del bloque */
+    }
+    .rk-datos-col {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      column-gap: 1.2rem;
+      row-gap: 0.35rem;
+      align-content: start;
+    }
+    .rk-datos-sep {
+      background: rgba(0,0,0,0.12);
+      width: 1px;
+      align-self: stretch;
+    }
+    /* Fila espaciadora entre mini-bloques temáticos */
+    .rk-datos-spacer {
+      grid-column: 1 / -1;
+      height: 0.65rem;
     }
     .rk-datos-label {
       color: var(--ink-mid);
       letter-spacing: 0.04em;
+      white-space: nowrap;        /* evita que "Acabado herraje" salte de línea */
     }
     .rk-datos-valor {
       color: var(--ink);
       font-weight: 400;
+    }
+    .rk-datos-valor.con-swatch {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    /* Contenedor de la imagen de apertura: ocupa toda la subcolumna */
+    .rk-datos-imagen {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: 0.8rem;
+      min-height: 0;
+    }
+    .rk-apert-img {
+      display: block;
+      max-width: 100%;
+      max-height: 11rem;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+    }
+    .rk-apert-img.izq {
+      transform: scaleX(-1);
     }
 
     /* Tabla de códigos */
@@ -468,15 +549,16 @@
       display: flex;
       flex-direction: column;
       gap: 0.55rem;
+      margin-top: 1rem;
     }
     .rk-codigo-linea {
       display: grid;
       grid-template-columns: 2.5rem 1fr;
       grid-template-rows: auto auto;
       align-items: baseline;
-      gap: 0.1rem 0.8rem;
-      padding: 0.5rem 0.7rem;
-      background: var(--card-bg-idle);
+      gap: 0.15rem 0.8rem;
+      padding: 0.6rem 0.8rem;
+      background: rgba(0,0,0,0.04);
       border-left: 2px solid var(--card-bd-selected);
       border-radius: 3px;
     }
@@ -487,13 +569,13 @@
       font-weight: 500;
       color: var(--ink);
       text-align: right;
-      font-size: 0.95rem;
+      font-size: 1.05rem;
     }
     .rk-codigo-code {
       grid-column: 2;
       grid-row: 1;
       font-family: 'Courier New', monospace;
-      font-size: 0.88rem;
+      font-size: 1rem;
       font-weight: 500;
       color: var(--ink);
       letter-spacing: 0.02em;
@@ -502,9 +584,9 @@
       grid-column: 2;
       grid-row: 2;
       color: var(--ink-mid);
-      font-size: 0.74rem;
+      font-size: 0.85rem;
       letter-spacing: 0.02em;
-      line-height: 1.3;
+      line-height: 1.35;
     }
 
     /* Imágenes */
@@ -537,7 +619,6 @@
       display: block;
     }
 
-    /* Botón secundario (Modificar) */
     /* Botón secundario (Modificar / Atrás) */
     .rk-btn-sec {
       background: transparent;
@@ -804,9 +885,7 @@
             <span>Derecha</span>
           </label>
         </div>
-        <div class="rk-apertura-dibujo" id="aperturaDibujo">
-          <img src="https://jdurba.github.io/Rasomuro02/Img/AperturaNeutra.png" alt="Apertura">
-        </div>
+        <div class="rk-apertura-dibujo" id="aperturaDibujo"></div>
       </div>
 
     </div>
@@ -840,7 +919,7 @@
       <div class="rk-resumen-bloque">
 
         <div>
-          <div class="rk-resumen-titulo">Parametros seleccionados</div>
+          <div class="rk-resumen-titulo">Parámetros seleccionados</div>
           <div class="rk-datos" id="resumenDatos"></div>
         </div>
 
@@ -855,7 +934,9 @@
       <div class="rk-img-card rk-img-combo">
         <span class="rk-img-caption">Conjunto configurado</span>
         <div class="rk-img-frame">
-          <img id="imgCombo" src="" alt="Componentes">
+          <div class="rk-cota-wrap" id="comboWrap">
+            <img id="imgCombo" src="" alt="Componentes">
+          </div>
         </div>
       </div>
 
@@ -868,9 +949,6 @@
        JAVASCRIPT
   ══════════════════════════════════════════════════════════════ -->
   <script>
-    // Configurador específico de Rasomuro KIT — vuelve al index general
-    // (no al sub-menú PA), por eso NO se activa regresarASubMenuPA.
-
     // ═══════════════════════════════════════════════════════════════
     // ESTADO DEL CONFIGURADOR
     // ═══════════════════════════════════════════════════════════════
@@ -1076,7 +1154,7 @@
           const valor = card.dataset.valor;
           config.apertura = valor;
           const flip = (valor === 'izquierda') ? ' rk-flip' : '';
-          dibujo.innerHTML = `<img class="rk-apert-img${flip}" src="${IMG_APERTURA_BASE}" alt="Apertura ${valor}">`;
+          dibujo.innerHTML = `<img class="${flip.trim()}" src="${IMG_APERTURA_BASE}" alt="Apertura ${valor}">`;
           validarConfig();
         });
       });
@@ -1215,27 +1293,177 @@
 
 
     // ═══════════════════════════════════════════════════════════════
+    // COTAS: tabla por altura del catálogo + cálculos
+    // ═══════════════════════════════════════════════════════════════
+    // Filas: una por cota. Columnas: 2030, 2110, 2300, 2500, 2700, 3000
+    const COTA_TABLA = {
+      MedCerradero:   { 2030: 1020, 2110: 1010, 2300: 1010, 2500: 1010, 2700: 1010, 3000: 1010 },
+      MedCerraPuerta: { 2030: 1015, 2110: 1005, 2300: 1005, 2500: 1005, 2700: 1005, 3000: 1005 },
+      MedManilla:     { 2030: 1060, 2110: 1050, 2300: 1050, 2500: 1050, 2700: 1050, 3000: 1050 },
+      MedBis1:        { 2030:  815, 2110:  855, 2300:  950, 2500:  700, 2700:  766, 3000:  833 },
+      MedBis2:        { 2030:  815, 2110:  855, 2300:  950, 2500:  700, 2700:  768, 3000:  834 },
+      MedBis3:        { 2030:    0, 2110:    0, 2300:    0, 2500:  700, 2700:  766, 3000:  833 }
+    };
+
+    function calcularCotas(cfg, r) {
+      const altoKit  = r.altoKit;       // ≡ AlturaCatalogo
+      const altoP    = cfg.alturaPuerta;
+      const cteBisS  = (altoKit === 3000) ? 255 : 205;  // excepción 3000
+      const medBisSup = cteBisS - ((altoKit + 10 - altoP)/2 - 5 );
+       console.log({ altoKit, altoP, cteBisS, medBisSup });   // ← aquí
+
+
+      return {
+        AnchoPuerta:    cfg.anchoPuerta,
+        AltoPuerta:     altoP,
+        MedCerradero:   COTA_TABLA.MedCerradero[altoKit],
+        MedCerraPuerta: COTA_TABLA.MedCerraPuerta[altoKit],
+        MedManilla:     COTA_TABLA.MedManilla[altoKit],
+        MedBis1:        COTA_TABLA.MedBis1[altoKit],
+        MedBis2:        COTA_TABLA.MedBis2[altoKit],
+        MedBis3:        COTA_TABLA.MedBis3[altoKit],
+        MedPerfil:      altoP + 10,
+        MedBisSup:      medBisSup,
+        MedBisInf:      medBisSup
+      };
+    }
+
+    // Posiciones en % (top, left) de cada cota sobre la imagen.
+    // VALORES PROVISIONALES — ajustar visualmente sobre la imagen real.
+    // Estructura: COTAS_POS[combo][mano][cotaId] = { top, left }
+    const COTAS_POS = {
+      combo03: {
+        derecha: {
+          AnchoPuerta:    { top: '95%', left: '56%' },
+          AltoPuerta:     { top: '45%', left: '65%' },
+          MedCerradero:   { top: '67%', left: '17%' },
+          MedCerraPuerta: { top: '67%', left: '36%' },
+          MedManilla:     { top: '67%', left: '50%' },
+          MedBis1:        { top: '29%', left: '92%' },
+          MedBis2:        { top: '62%', left: '92%' },
+          MedPerfil:      { top: '45.5%', left: '8%' },
+          MedBisSup:      { top: '10%', left: '92%' },
+          MedBisInf:      { top: '81%', left: '92%' }
+          // MedBis3 NO se pinta en combo03
+        },
+        izquierda: {
+          AnchoPuerta:    { top: '95%', left: '44%' },
+          AltoPuerta:     { top: '45%', left: '35%' },
+          MedCerradero:   { top: '67%', left: '83%' },
+          MedCerraPuerta: { top: '67%', left: '64%' },
+          MedManilla:     { top: '67%', left: '50%' },
+          MedBis1:        { top: '29%', left: '8%' },
+          MedBis2:        { top: '62%', left: '8%' },
+          MedPerfil:      { top: '45.5%', left: '92%' },
+          MedBisSup:      { top: '10%', left: '8%' },
+          MedBisInf:      { top: '81%', left: '8%' }
+        }
+      },
+      combo04: {
+        derecha: {
+          AnchoPuerta:    { top: '95%', left: '50%' },
+          AltoPuerta:     { top: '50%', left: '10%' },
+          MedCerradero:   { top: '15%', left: '90%' },
+          MedCerraPuerta: { top: '20%', left: '75%' },
+          MedManilla:     { top: '50%', left: '85%' },
+          MedBis1:        { top: '20%', left: '20%' },
+          MedBis2:        { top: '50%', left: '20%' },
+          MedBis3:        { top: '80%', left: '20%' },
+          MedPerfil:      { top: '50%', left: '30%' },
+          MedBisSup:      { top: '12%', left: '35%' },
+          MedBisInf:      { top: '88%', left: '35%' }
+        },
+        izquierda: {
+          AnchoPuerta:    { top: '95%', left: '50%' },
+          AltoPuerta:     { top: '50%', left: '10%' },
+          MedCerradero:   { top: '15%', left: '90%' },
+          MedCerraPuerta: { top: '20%', left: '75%' },
+          MedManilla:     { top: '50%', left: '85%' },
+          MedBis1:        { top: '20%', left: '20%' },
+          MedBis2:        { top: '50%', left: '20%' },
+          MedBis3:        { top: '80%', left: '20%' },
+          MedPerfil:      { top: '50%', left: '30%' },
+          MedBisSup:      { top: '12%', left: '35%' },
+          MedBisInf:      { top: '88%', left: '35%' }
+        }
+      }
+    };
+
+    function pintarCotas(cfg, r) {
+      const wrap   = document.getElementById('comboWrap');
+      const combo  = (r.altoKit >= 2500) ? 'combo04' : 'combo03';
+      const mano   = cfg.apertura;          // 'derecha' | 'izquierda'
+      const pos    = COTAS_POS[combo][mano];
+      const cotas  = calcularCotas(cfg, r);
+
+      // Borrar cotas anteriores (sin tocar la <img>)
+      wrap.querySelectorAll('.rk-cota').forEach(el => el.remove());
+
+      // Pintar las definidas en este combo
+      Object.entries(pos).forEach(([id, p]) => {
+        const valor = cotas[id];
+        if (valor === undefined) return;
+        const span = document.createElement('span');
+        span.className = 'rk-cota';
+        span.style.top  = p.top;
+        span.style.left = p.left;
+        span.textContent = valor;
+        wrap.appendChild(span);
+      });
+    }
+
+
+    // ═══════════════════════════════════════════════════════════════
     // PINTAR FORM2
     // ═══════════════════════════════════════════════════════════════
     function pintarResumen() {
       const r = generarResumen(config);
 
-      // Bloque datos
-      const datos = [
-        ['Ancho puerta',     `${config.anchoPuerta} mm`],
-        ['Ancho luz obra',   `${config.anchoLuzObra} mm`],
-        ['Alto puerta',      `${config.alturaPuerta} mm`],
-        ['Alto luz obra',    `${config.alturaLuzObra} mm`],
-        ['Kit aplicado',     `${r.altoKit} mm`],
-        ['Tipo cabecero',    LABEL_TIPO[config.tipoRasomuro]],
-        ['Modelo cierre',    LABEL_CIERRE[config.cierre]],
-        ['Acabado',          LABEL_ACAB[config.acabado]],
-        ['Apertura',         LABEL_APERT[config.apertura]],
-        ['Cantidad',         `${config.cantidadPuertas} ud.`]
+      // ── Bloque datos: dos sub-columnas con mini-grupos separados ─────────
+      const valorAcabado =
+        `<span class="rk-datos-valor con-swatch">
+           <span class="rk-chip-swatch ${config.acabado}"></span>${LABEL_ACAB[config.acabado]}
+         </span>`;
+
+      // SVG eliminado: ahora se usa la imagen de apertura del form1.
+      const imgApert = `
+        <img class="rk-apert-img${config.apertura === 'izquierda' ? ' izq' : ''}"
+             src="${IMG_APERTURA_BASE}" alt="Apertura ${config.apertura}">`;
+
+      // Estructura: cada subcolumna recibe filas en grupos separados por
+      // <div class="rk-datos-spacer"></div>. Las "celdas" vacías equilibran
+      // visualmente la columna derecha sin escribir nada.
+      const colIzq = [
+        ['Alto luz obra',  `${config.alturaLuzObra} mm`],
+        ['Ancho luz obra', `${config.anchoLuzObra} mm`],
+        '---',
+        ['Kit aplicado',   `${r.altoKit} mm`],
+        ['Tipo cabecero',  LABEL_TIPO[config.tipoRasomuro]],
+        '---',
+        ['Acabado herraje', valorAcabado],
+        ['Modelo cierre',   LABEL_CIERRE[config.cierre]],
+        ['Cantidad',       `${config.cantidadPuertas} ud.`]
       ];
-      document.getElementById('resumenDatos').innerHTML = datos
-        .map(([k,v]) => `<div class="rk-datos-label">${k}</div><div class="rk-datos-valor">${v}</div>`)
-        .join('');
+      const colDcha = [
+        ['Alto puerta',  `${config.alturaPuerta} mm`],
+        ['Ancho puerta', `${config.anchoPuerta} mm`],
+        '---',
+        ['Apertura',     LABEL_APERT[config.apertura]],
+        { imagen: imgApert }
+      ];
+
+      const renderCol = arr => arr.map(item => {
+        if (item === '---')          return `<div class="rk-datos-spacer"></div>`;
+        if (item.imagen)             return `<div class="rk-datos-imagen">${item.imagen}</div>`;
+        return `<div class="rk-datos-label">${item[0]}</div>
+                <div class="rk-datos-valor">${item[1]}</div>`;
+      }).join('');
+
+      document.getElementById('resumenDatos').innerHTML = `
+        <div class="rk-datos-col">${renderCol(colIzq)}</div>
+        <div class="rk-datos-sep"></div>
+        <div class="rk-datos-col">${renderCol(colDcha)}</div>
+      `;
 
       // Bloque códigos
       document.getElementById('resumenCodigos').innerHTML = r.codigos
@@ -1248,8 +1476,18 @@
         .join('');
 
       // Imágenes
-      document.getElementById('imgKit').src   = r.imgKit;
-      document.getElementById('imgCombo').src = r.imgCombo;
+      document.getElementById('imgKit').src = r.imgKit;
+      const imgCombo  = document.getElementById('imgCombo');
+      const comboWrap = document.getElementById('comboWrap');
+      imgCombo.onload = () => {
+        comboWrap.style.setProperty('--combo-ratio',
+          `${imgCombo.naturalWidth} / ${imgCombo.naturalHeight}`);
+      };
+      imgCombo.src = r.imgCombo;
+      comboWrap.classList.toggle('rk-flip', config.apertura === 'izquierda');
+
+      // Cotas sobre imgCombo
+      pintarCotas(config, r);
     }
 
 
@@ -1262,6 +1500,11 @@
       document.getElementById('header1').style.display  = (n === 1) ? '' : 'none';
       document.getElementById('header2').style.display  = (n === 2) ? '' : 'none';
       window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+
+    function pintarAperturaNeutra() {
+      document.getElementById('aperturaDibujo').innerHTML =
+        `<img src="${IMG_APERTURA_NEUTRA}" alt="Apertura">`;
     }
 
     function resetearConfig() {
@@ -1287,8 +1530,7 @@
       luzH.value = ''; luzH.classList.remove('filled');
 
       // Dibujo de apertura: vuelve al estado neutro
-      document.getElementById('aperturaDibujo').innerHTML =
-        `<img src="${IMG_APERTURA_NEUTRA}" alt="Apertura">`;
+      pintarAperturaNeutra();
 
       validarConfig();
     }
@@ -1313,6 +1555,9 @@
         accion();
       }
     });
+
+    // Inicialización: imagen neutra de apertura
+    pintarAperturaNeutra();
   </script>
 
 </body>
