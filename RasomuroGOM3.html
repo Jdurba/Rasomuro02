@@ -782,8 +782,8 @@
   ══════════════════════════════════════════════════════════════ -->
   <header class="rk-header" id="header1">
     <img class="rk-logo"
-         src="https://jdurba.github.io/Rasomuro02/Img/LogoGomila.png"
-         alt="GOMILA" />
+         src="https://jdurba.github.io/General/img/LogoAdinorBlanco.png"
+         alt="ADINOR" />
     <div class="rk-title">Rasomuro KIT GOM3</div>
     <button type="button" class="rk-back" onclick="volverAlMenu()">← Volver al menú</button>
   </header>
@@ -793,8 +793,8 @@
   ══════════════════════════════════════════════════════════════ -->
   <header class="rk-header" id="header2" style="display:none;">
     <img class="rk-logo"
-         src="https://jdurba.github.io/Rasomuro02/Img/LogoGomila.png"
-         alt="GOMILA" />
+         src="https://jdurba.github.io/General/img/LogoAdinorBlanco.png"
+         alt="ADINOR" />
     <div class="rk-title">Rasomuro KIT</div>
     <div class="rk-header-acciones">
       <button type="button" class="rk-header-btn" id="btnAtras">← Atrás</button>
@@ -1458,6 +1458,8 @@
 
     // Tablas de codificación
     const COD_ALTO  = { 2030:'03', 2110:'11', 2300:'23', 2500:'25', 2700:'27', 3000:'30' };
+    // Códigos de hoja (PRG): mismo escalón de altura, distinta nomenclatura
+    const COD_ALTO_PUERTA = { 2030:'203', 2110:'211', 2300:'230', 2500:'250', 2700:'270', 3000:'300' };
     const COD_ANCHO = { 725:'72', 825:'82', 925:'92', 1025:'102' };
     const COD_CIERRE = { bombillo:'C', condena:'WC' };
     const COD_ACAB   = { blanco:'B', negro:'N', plata:'P' };
@@ -1506,6 +1508,31 @@
       'MRCG.82':  'KIT CABECERO RASOMURO GOM 825 mm',
       'MRCG.92':  'KIT CABECERO RASOMURO GOM 925 mm',
       'MRCG.102': 'KIT CABECERO RASOMURO GOM 1025 mm',
+      // PUERTA (24 · solo si se suministra puerta)
+      'PRG.20372':  'PUERTA RASOMURO PRELACADA 203 x 72,5',
+      'PRG.20382':  'PUERTA RASOMURO PRELACADA 203 x 82,5',
+      'PRG.20392':  'PUERTA RASOMURO PRELACADA 203 x 92,5',
+      'PRG.203102': 'PUERTA RASOMURO PRELACADA 203 x 102,5',
+      'PRG.21172':  'PUERTA RASOMURO PRELACADA 211 x 72,5',
+      'PRG.21182':  'PUERTA RASOMURO PRELACADA 211 x 82,5',
+      'PRG.21192':  'PUERTA RASOMURO PRELACADA 211 x 92,5',
+      'PRG.211102': 'PUERTA RASOMURO PRELACADA 211 x 102,5',
+      'PRG.23072':  'PUERTA RASOMURO PRELACADA 230 x 72,5',
+      'PRG.23082':  'PUERTA RASOMURO PRELACADA 230 x 82,5',
+      'PRG.23092':  'PUERTA RASOMURO PRELACADA 230 x 92,5',
+      'PRG.230102': 'PUERTA RASOMURO PRELACADA 230 x 102,5',
+      'PRG.25072':  'PUERTA RASOMURO PRELACADA 250 x 72,5',
+      'PRG.25082':  'PUERTA RASOMURO PRELACADA 250 x 82,5',
+      'PRG.25092':  'PUERTA RASOMURO PRELACADA 250 x 92,5',
+      'PRG.250102': 'PUERTA RASOMURO PRELACADA 250 x 102,5',
+      'PRG.27072':  'PUERTA RASOMURO PRELACADA 270 x 72,5',
+      'PRG.27082':  'PUERTA RASOMURO PRELACADA 270 x 82,5',
+      'PRG.27092':  'PUERTA RASOMURO PRELACADA 270 x 92,5',
+      'PRG.270102': 'PUERTA RASOMURO PRELACADA 270 x 102,5',
+      'PRG.30072':  'PUERTA RASOMURO PRELACADA 300 x 72,5',
+      'PRG.30082':  'PUERTA RASOMURO PRELACADA 300 x 82,5',
+      'PRG.30092':  'PUERTA RASOMURO PRELACADA 300 x 92,5',
+      'PRG.300102': 'PUERTA RASOMURO PRELACADA 300 x 102,5',
       // HERRAJE · cerradura magnética (6)
       'MR.CB.C.B':  'CERRADURA MAGNETICA CB CILINDRO BLANCO',
       'MR.CB.C.N':  'CERRADURA MAGNETICA CB CILINDRO NEGRO',
@@ -1537,6 +1564,12 @@
         { code: `MR.CB.${cCierre}.${cAcab}`,     cant: n }
       ];
       if (c.tipoRasomuro === 'escalon') codes.push({ code: `MRCG.${cAncho}`, cant: n });
+
+      // Hoja de puerta: última línea y solo si la suministramos nosotros,
+      // así el resto del pedido no cambia de orden entre ambos modos.
+      if (c.llevaPuerta) {
+        codes.push({ code: `PRG.${COD_ALTO_PUERTA[altoKit]}${cAncho}`, cant: n });
+      }
 
       const codigos = codes.map(l => ({
         cant: l.cant,
