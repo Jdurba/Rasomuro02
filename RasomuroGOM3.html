@@ -137,34 +137,16 @@
       flex-direction: column;
     }
 
-    /* ── Barra de condición inicial (con / sin puerta) ── */
-    .rk-gate {
-      display: flex;
-      align-items: center;
-      gap: clamp(0.8rem, 2vw, 1.6rem);
-      padding-bottom: 0.7rem;
-      margin-bottom: clamp(0.8rem, 1.6vw, 1.2rem);
-      border-bottom: 1px solid rgba(0,0,0,0.35);
-    }
-    .rk-gate-titulo {
-      font-size: 0.72rem;
-      font-weight: 500;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--ink-mid);
-      white-space: nowrap;
-    }
-    .rk-gate .rk-cards-row {
-      grid-template-columns: repeat(2, minmax(150px, 220px));
-      flex: 0 0 auto;
-    }
-    .rk-gate-nota {
-      font-size: 0.78rem;
+    /* Nota aclaratoria bajo un grupo */
+    .rk-grupo-nota {
+      font-size: 0.74rem;
+      line-height: 1.35;
       color: var(--ink-light);
       font-style: italic;
     }
 
-    .rk-grupos.bloqueado {
+    /* Hasta elegir suministro, el resto del formulario queda inerte */
+    .rk-grupos.bloqueado .rk-grupo:not([data-grupo="puerta"]) {
       opacity: 0.4;
       pointer-events: none;
       filter: grayscale(0.35);
@@ -177,14 +159,17 @@
       gap: clamp(0.8rem, 1.6vw, 1.4rem) clamp(4.8rem, 10vw, 8rem);
     }
 
-    /* Asignación de cada grupo a su celda */
-    .rk-grupo[data-grupo="ancho"]     { grid-column: 1; grid-row: 1; }
-    .rk-grupo[data-grupo="altura"]    { grid-column: 1; grid-row: 2; }
-    .rk-grupo[data-grupo="acabado"]   { grid-column: 1; grid-row: 3; }
+    /* Asignación de cada grupo a su celda.
+       El orden de lectura sigue el orden de dependencia:
+       suministro → cabecero → alto → ancho → acabado → cierre. */
+    .rk-grupo[data-grupo="puerta"]    { grid-column: 1; grid-row: 1; }
     .rk-grupo[data-grupo="tipo"]      { grid-column: 2; grid-row: 1; }
-    .rk-grupo[data-grupo="cierre"]    { grid-column: 2; grid-row: 2; }
-    .rk-grupo[data-grupo="cantidad"]  { grid-column: 2; grid-row: 3; }
-    .rk-grupo[data-grupo="apertura"]  { grid-column: 3; grid-row: 1 / span 3; }
+    .rk-grupo[data-grupo="altura"]    { grid-column: 1; grid-row: 2; }
+    .rk-grupo[data-grupo="ancho"]     { grid-column: 2; grid-row: 2; }
+    .rk-grupo[data-grupo="acabado"]   { grid-column: 1; grid-row: 3; }
+    .rk-grupo[data-grupo="cierre"]    { grid-column: 2; grid-row: 3; }
+    .rk-grupo[data-grupo="apertura"]  { grid-column: 3; grid-row: 1 / span 2; }
+    .rk-grupo[data-grupo="cantidad"]  { grid-column: 3; grid-row: 3; }
 
     /* Estilo base de un grupo */
     .rk-grupo {
@@ -737,13 +722,14 @@
       .rk-grupos {
         grid-template-columns: 1fr 1fr;
       }
-      .rk-grupo[data-grupo="ancho"]     { grid-column: 1; grid-row: 1; }
-      .rk-grupo[data-grupo="altura"]    { grid-column: 2; grid-row: 1; }
+      .rk-grupo[data-grupo="puerta"]    { grid-column: 1 / -1; grid-row: 1; }
       .rk-grupo[data-grupo="tipo"]      { grid-column: 1; grid-row: 2; }
-      .rk-grupo[data-grupo="cierre"]    { grid-column: 2; grid-row: 2; }
-      .rk-grupo[data-grupo="acabado"]   { grid-column: 1; grid-row: 3; }
-      .rk-grupo[data-grupo="cantidad"]  { grid-column: 2; grid-row: 3; }
-      .rk-grupo[data-grupo="apertura"]  { grid-column: 1 / -1; grid-row: 4; }
+      .rk-grupo[data-grupo="altura"]    { grid-column: 2; grid-row: 2; }
+      .rk-grupo[data-grupo="ancho"]     { grid-column: 1; grid-row: 3; }
+      .rk-grupo[data-grupo="cierre"]    { grid-column: 2; grid-row: 3; }
+      .rk-grupo[data-grupo="acabado"]   { grid-column: 1; grid-row: 4; }
+      .rk-grupo[data-grupo="cantidad"]  { grid-column: 2; grid-row: 4; }
+      .rk-grupo[data-grupo="apertura"]  { grid-column: 1 / -1; grid-row: 5; }
       .rk-apertura-dibujo { min-height: 160px; }
 
       .rk-resumen {
@@ -809,23 +795,21 @@
   ══════════════════════════════════════════════════════════════ -->
   <form id="form1" class="rk-body" autocomplete="off" onsubmit="return false;">
 
-    <!-- ─────────────────────────────────────────────
-         CONDICIÓN INICIAL · ¿lleva puerta Adinor?
-    ───────────────────────────────────────────── -->
-    <div class="rk-gate" id="rk-gate">
-      <span class="rk-gate-titulo">Suministro de puerta</span>
-      <div class="rk-cards-row cols-2" role="radiogroup" aria-label="Suministro de puerta">
-        <label class="rk-card" data-valor="con">
-          <input type="radio" name="llevaPuerta" value="con">Con puerta
-        </label>
-        <label class="rk-card" data-valor="sin">
-          <input type="radio" name="llevaPuerta" value="sin">Sin puerta
-        </label>
-      </div>
-      <span class="rk-gate-nota" id="gateNota">Elige una opción para configurar</span>
-    </div>
-
     <div class="rk-grupos bloqueado" id="rk-grupos">
+
+      <!-- ── Condición inicial: ¿suministramos la puerta? ── -->
+      <div class="rk-grupo" data-grupo="puerta">
+        <div class="rk-grupo-titulo">Suministro de puerta</div>
+        <div class="rk-cards-row cols-2" role="radiogroup" aria-label="Suministro de puerta">
+          <label class="rk-card" data-valor="con">
+            <input type="radio" name="llevaPuerta" value="con">Con puerta
+          </label>
+          <label class="rk-card" data-valor="sin">
+            <input type="radio" name="llevaPuerta" value="sin">Sin puerta
+          </label>
+        </div>
+        <div class="rk-grupo-nota" id="gateNota">Elige una opción para configurar</div>
+      </div>
 
       <!-- ─────────────────────────────────────────────
            ANCHO DE PUERTA
@@ -1041,9 +1025,13 @@
 
     // Rangos de medida libre
     const ANCHO_MIN = 600, ANCHO_MAX = 1025;
-    const ALTO_MIN  = { conPuerta: 2211, sinPuerta: 2000 };
-    const ALTO_MAX  = 3000;
-    let   altoMin   = ALTO_MIN.conPuerta;   // activo; lo fija Altura.modo()
+    // Con puerta el tope es la hoja (2700). Sin puerta manda el kit (3000).
+    const ALTO_RANGO = {
+      conPuerta: { min: 2211, max: 2700 },
+      sinPuerta: { min: 2111, max: 3000 }
+    };
+    let altoMin = ALTO_RANGO.conPuerta.min;   // activos; los fija Altura.modo()
+    let altoMax = ALTO_RANGO.conPuerta.max;
 
     // Anchos estándar de catálogo (kits). El kit aplicado es el inmediato superior.
     const ANCHO_KITS = [725, 825, 925, 1025];
@@ -1161,19 +1149,25 @@
       });
 
       return {
-        // Con puerta Adinor: solo los 4 anchos estándar.
+        // Con puerta: solo los 4 anchos estándar (la hoja PRG no existe a medida).
         modo(conPuerta) {
           libre.classList.toggle('oculto', conPuerta);
           this.reset();
+          this.cabecero(config.tipoRasomuro);
         },
 
-        // Cabecero escalón: no admite medidas especiales (solo existe MRCE en los 4 anchos).
-        escalon(activo) {
-          libre.disabled = activo;
-          if (!activo) { errorMsg.textContent = ''; return; }
+        // Medida libre únicamente si NO lleva puerta y NO lleva cabecero:
+        // recto y escalón solo existen en los 4 anchos de catálogo.
+        cabecero(tipo) {
+          const libreOK = (config.llevaPuerta === false) && (tipo === 'sincabecero');
+          libre.disabled = !libreOK;
+          libre.placeholder = libreOK
+            ? `o medida (${ANCHO_MIN} — ${ANCHO_MAX})`
+            : 'medida solo sin cabecero';
+          if (libreOK) { errorMsg.textContent = ''; return; }
 
           const txt = libre.value.trim();
-          if (txt === '') return;
+          if (txt === '') { errorMsg.textContent = ''; return; }
 
           const v = parseInt(txt, 10);
           limpiarLibre();
@@ -1183,7 +1177,7 @@
             limpiarCards();
             aplicar(null);
             errorMsg.textContent =
-              'El cabecero escalón solo admite los anchos estándar. Se ha borrado la medida especial.';
+              'Con cabecero solo se admiten los anchos estándar. Se ha borrado la medida especial.';
           }
         },
 
@@ -1251,10 +1245,10 @@
         if (txt === '') return;  // ya gestionado en 'input'
 
         const v = parseInt(txt, 10);
-        if (isNaN(v) || v < altoMin || v > ALTO_MAX) {
+        if (isNaN(v) || v < altoMin || v > altoMax) {
           inputLibre.classList.remove('filled');
           inputLibre.classList.add('error');
-          errorMsg.textContent = `Fuera de rango — admitido: ${altoMin} a ${ALTO_MAX} mm`;
+          errorMsg.textContent = `Fuera de rango — admitido: ${altoMin} a ${altoMax} mm`;
           aplicar(null);
         } else {
           inputLibre.classList.remove('error');
@@ -1273,11 +1267,14 @@
       });
 
       return {
-        // Con puerta Adinor la medida ajustable arranca en 2211; sin puerta, en 2000.
+        // Con puerta: 2211–2700 (tope de hoja). Sin puerta: 2111–3000 (tope de kit).
         modo(conPuerta) {
-          altoMin = conPuerta ? ALTO_MIN.conPuerta : ALTO_MIN.sinPuerta;
+          const r = conPuerta ? ALTO_RANGO.conPuerta : ALTO_RANGO.sinPuerta;
+          altoMin = r.min;
+          altoMax = r.max;
           inputLibre.min = altoMin;
-          inputLibre.placeholder = `o medida (${altoMin} — ${ALTO_MAX})`;
+          inputLibre.max = altoMax;
+          inputLibre.placeholder = `o medida (${altoMin} — ${altoMax})`;
           this.reset();
         },
         reset() {
@@ -1299,13 +1296,13 @@
     // CONDICIÓN INICIAL · ¿lleva puerta Adinor?
     // ═══════════════════════════════════════════════════════════════
     const Puerta = (function () {
-      const cards  = document.querySelectorAll('.rk-gate .rk-card');
+      const cards  = document.querySelectorAll('.rk-grupo[data-grupo="puerta"] .rk-card');
       const grupos = document.getElementById('rk-grupos');
       const nota   = document.getElementById('gateNota');
 
       const NOTA = {
-        con: 'Anchos estándar (725 / 825 / 925 / 1025 mm) · alto 2211–3000 mm.',
-        sin: 'Ancho libre 600–1025 mm · alto 2000–3000 mm. El kit se elige por el escalón inmediato superior.'
+        con: 'Anchos estándar · alto hasta 2700 mm (límite de la hoja).',
+        sin: 'Alto hasta 3000 mm. Ancho a medida solo si no lleva cabecero.'
       };
 
       cards.forEach(card => {
@@ -1364,7 +1361,7 @@
     document.querySelectorAll('.rk-grupo[data-grupo="tipo"] .rk-card')
       .forEach(card => card.addEventListener('click', () => {
         recalcularAlturaLuz();
-        Ancho.escalon(card.dataset.valor === 'escalon');
+        Ancho.cabecero(card.dataset.valor);
       }));
 
 
@@ -1849,7 +1846,18 @@
       mostrarForm(1);
     });
     document.getElementById('btnPDF').addEventListener('click', () => {
-      SalidaPDFRasomuro.generar(config);
+      // El módulo de salida está en desarrollo: se avisa en vez de fallar en silencio.
+      if (typeof SalidaPDFRasomuro === 'undefined' ||
+          typeof SalidaPDFRasomuro.generar !== 'function') {
+        alert('El módulo SalidaPDF-Rasomuro.js no está disponible.');
+        return;
+      }
+      try {
+        SalidaPDFRasomuro.generar(config);
+      } catch (err) {
+        console.error('[PDF]', err);
+        alert('Error al generar el PDF: ' + err.message);
+      }
     });
 
     document.getElementById('btnNueva').addEventListener('click', () => {
